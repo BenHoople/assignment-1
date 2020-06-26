@@ -1,0 +1,29 @@
+<!--
+  Step 1: This page must allow the user to edit an existing resource.
+-->
+
+
+<%- include ('../partials/header') %>
+
+  <div class="text-center editForm">
+    <!-- form starts -->
+    <form class="form-edit" method="post" action="/videos/update" encType="multipart/form-data">
+      <!-- id -->
+      <input type="hidden" name="id" value = "<%= formData.id %>">
+      <!-- title -->
+      <h1 class="h3 mb-3 font-weight-normal"><i class="fa fa-pencil"></i> Edit</h1>
+      <!-- Change title -->
+      <input type="title" name="title" id="inputEmail" class="form-control mb-3" placeholder="<%= formData.title %>" required autofocus>
+      <!-- change description -->
+      <textarea type="text" name="description" id="description" class="mb-3 form-control" placeholder="<%= formData.description %>"" required></textarea>
+      <!-- checkboxes -->
+      <div class="checkbox mb-3">
+          <label>
+              <input type="checkbox" name="status" value="status"> Make Video Public
+          </label>
+      </div>
+      <button class="btn btn-lg btn-primary btn-block" type="submit">Apply Changes</button>
+    </form>
+  </div>
+
+<%- include ('../partials/footer') %>

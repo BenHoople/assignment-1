@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+    <%- include ('../partials/header') %>
+
+    <body>
+        
+        <main role="main">
+            <!-- big ol in your face screen -->
+            <section class="jumbotron text-center">
+                <div class="container">
+                    <h1 class="jumbotron-heading">Vloggins</h1>
+                    <p class="lead text-muted">Where all Bloggins Vlog! Upload Your Videos Today!</p>
+                    <% if (!authorized) { %>
+                    <p> <a href="/users/new" class="btn btn-primary my-2"><i class="fa fa-user-plus"> </i> Sign-Up</a> 
+                        <a href="/login" class="btn btn-secondary my-2"><i class="fa fa-sign-in"></i> Sign-In</a> </p>
+                      <% } else { %>
+                          <p><a class="btn btn-primary my-2 upload-button"><i class="fa fa-upload"></i> Upload!</a></p>
+                      <% } %>
+                </div>
+            </section>
+            <!-- where all the videos will be loaded -->
+            <div class="album py-5 bg-light">
+                <div class="container">
+                    <div class="row">
+                        <%- include('../partials/videoCard'); %>
+                    </div>
+                </div>
+            </div>                
+        </main>
+        <!-- where i'll hide my sign in form -->
+        <% if (authorized) { %>
+            <%- include ('./new') %>
+        <% } %>
+        <footer class="text-muted">
+            <div class="container">
+                <p class="float-right"> <a href="#">Back to top</a> </p>
+                <p>Vloggins &copy; is a Bloggin Good Time</p>
+            </div>
+        </footer>
+        <!-- Bootstrap core JavaScript
+        ================================================== -->
+        <!-- Placed at the end of the document so the pages load faster -->
+        <script src="/javascript/main.js"></script>
+        <script src="/javascript/jquery.min.js"></script>
+        <script src="/javascript/popper.js"></script>
+        <script src="/javascript/bootstrap.min.js"></script>
+    </body>
+</html>
