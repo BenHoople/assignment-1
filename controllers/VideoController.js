@@ -67,7 +67,7 @@ exports.create = async (req, res) => {
     try {
     if(req.files){
       //create video database entry
-      //user association
+      //User association
       const { user: email } = await req.session.passport;
       const user = await User.findOne({email: email});//find user
       //create video
