@@ -1,6 +1,6 @@
 
 const viewPath = ('videos');
-const Video = require('../models/videos');
+const Video = require('../models/Video');
 const User = require('../models/User');
 const fileUpload = require('express-fileupload');
 
@@ -102,27 +102,30 @@ exports.edit = async (req, res) => {
     });
     }catch(err){
         req.flash('danger', 'We were unable to edit this video for some reason, sorry!.');
-        console.error(err);
+        console.error("the error is in edit: "+err);
         res.redirect('/');
     }
 }
 exports.update = async (req, res) => {
     try{
         let video = await Video.findById(req.body.id);
+
+        console.log(video);
+        console.log("we're in update");
+
         if(!video) throw new Error("Video couldn't be found");
         
-        video = await Video.findByIdAndUpdate(req.body.id,req.body.title, req.body.description);
-      
+        // video = await Video.findByIdAndUpdate(req.body.id, {req.body.title, req.body.description});
+        video = await Video.findByIdAndUpdate(req.body.id, req.body);
 
         // const attributes = {user: user._id, ...req.body};
-        // await Video.validate(req.body);
         // await Video.findByIdAndUpdate(req.body.id, req.body);
         
-        res.flash('success', 'The video was updated!');
+        req.flash('success', 'The video was updated!');
         res.redirect(`/videos/${req.body.id}`);
     }catch(error){
-        req.flash('danger', 'We were unable to edit this video for some reason, sorry!.');
-        console.error(error);
+        req.flash('danger', 'We were unable to update this video for some reason, sorry!.');
+        console.error("here is the error: "+error);
         res.redirect(`/videos/${req.body.id}/edit`);
     }
 }
