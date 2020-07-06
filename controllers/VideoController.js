@@ -1,6 +1,6 @@
 
 const viewPath = ('videos');
-const Video = require('../models/Videos');
+const Video = require('../models/videos');
 const User = require('../models/User');
 const fileUpload = require('express-fileupload');
 
