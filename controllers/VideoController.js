@@ -71,7 +71,15 @@ exports.create = async (req, res) => {
       const { user: email } = await req.session.passport;
       const user = await User.findOne({email: email});//find user
       //create video
-      const video = await Video.create({user: user._id, title: req.body.title, description: req.body.description});
+      //determin status
+      let status;
+      if(req.body.status === undefined){
+        status = "PRIVATE";
+      }else{
+        status = "PUBLIC"
+      }
+
+      const video = await Video.create({user: user._id, title: req.body.title, description: req.body.description, status});
       req.flash('success', 'Video successfully uploaded!');
       
 
@@ -115,11 +123,7 @@ exports.update = async (req, res) => {
 
         if(!video) throw new Error("Video couldn't be found");
         
-        // video = await Video.findByIdAndUpdate(req.body.id, {req.body.title, req.body.description});
         video = await Video.findByIdAndUpdate(req.body.id, req.body);
-
-        // const attributes = {user: user._id, ...req.body};
-        // await Video.findByIdAndUpdate(req.body.id, req.body);
         
         req.flash('success', 'The video was updated!');
         res.redirect(`/videos/${req.body.id}`);
