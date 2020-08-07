@@ -7,18 +7,23 @@ exports.new = (req, res) => {
   });
 };
 
-exports.create = async (req, res) => {
-  const userDetails = req.body;
-  req.session.flash = {};
-  
+exports.create = async (req, res) => {  
   try {
+    //create a user variable
+    if(req.body.email !== req.body.emailConfirmation || req.body.password !== req.body.passwordConfirmation){
+      res.status(420).json({message:"your password and emails must match!"});
+    }
+    // delete req.body.passwordConfirmation;
+    // delete req.body.emailConfirmation;
+    console.log(req.body);
     const user = new User(req.body);
-    await User.register(user, req.body.password); 
-    req.flash('success', 'The user was successfully created');
-    res.redirect(`/login`);
-  } catch (error) {
-    req.flash('danger', error.message);
-    req.session.formData = req.body;
-    res.redirect(`${viewPath}/new`);
-  }
+    console.log(user);
+
+    //upload it to the database
+    await User.register(user, req.body.password);
+    //hopefully it worked
+    res.status(200);
+    } catch (err) {
+        res.status(400).json({message: `We failed to create an account`})
+    }
 };

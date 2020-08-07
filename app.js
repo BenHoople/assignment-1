@@ -41,12 +41,6 @@ app.use('/javascript', express.static('assets/javascript'));
 app.use('/images', express.static('assets/images'));
 app.use('/videos', express.static('assets/uploads/videos'));
 
-//set up file mover
-const fileUpload = require('express-fileupload');
-app.use(fileUpload());
-
-
-
 // Setup flash notifications and defaults
 const flash = require('connect-flash');
 app.use(flash());
@@ -64,7 +58,13 @@ app.use('/', (req, res, next) => {
 });
 // Our routes
 const routes = require('./routes.js');
-app.use('/', routes);
-// Start our server
-const port = process.env.PORT || 3000;
-app.listen(port, () => console.log(`Listening on port ${port}`));
+app.use('/api', routes);
+
+app.use(express.static(path.join(__dirname, 'client/build')));
+app.get('*', (req, res) => {
+  res.sendFile(path.join(__dirname+'/client/build/index.html'));
+});
+
+//start server
+const port = process.env.PORT || 4000;
+app.listen(port, () => console.log(`Listening on ${port}`));

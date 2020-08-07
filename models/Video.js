@@ -23,13 +23,20 @@ const VideoScema = new mongoose.Schema({
       type: String,
       required: true //you must have a description!
   },
+  videoID:{
+      type: String,
+      required: true //you must embed something!
+  },
   status: {
       type: String,
       enum: ['PUBLIC', 'PRIVATE'],
       default: 'PRIVATE'
   }
 },{
-  timestamps: true
+  timestamps: true,
+  toJSON:{
+    getters: true,
+  }
 });
 
 //query helpers

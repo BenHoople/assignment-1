@@ -2,75 +2,52 @@
 const viewPath = ('videos');
 const Video = require('../models/Video');
 const User = require('../models/User');
-const fileUpload = require('express-fileupload');
-
-// INSTRUCTIONS:
-/*
-  Create a new resource controller that uses the
-  User as an associative collection (examples):
-  - User -> Books
-  - User -> Reservation
-
-- video room
-
-  - index
-    show all videos
-  - show
-    show a video
-  - create
-    upload video and add to database
-  - edit
-    edit a video entry
-  - update
-    apply changes made in edit
-  - delete
-    delete a video entry
-
-*/
 exports.index = async (req, res) => {
-    try{
-        const videos = await Video.find().populate('user').sort({updatedAt: 'desc'});
-        res.render(`${viewPath}/index`, {
-            pageTitle: 'Library',
-            videos: videos
-        });
-    }catch(err){
-        req.flash('danger', 'We were unable to display the archive for some reason.');
-        console.error(err);
-        res.redirect('/');
-    }
+  try {
+    const videos = await Video.find().populate('user').sort({updatedAt: 'desc'});
+    res.status(200).json(videos);
+  } catch (error) {
+    res.status(420).json({message: 'There was an error fetching the videos', error});
+  }
+}
+exports.profile = async (req, res) => {
+  try {
+    const email = req.body.email;
+    const user = await User.findOne({email: email});
+    const videos = await Video.find({ "user" : user }).populate('user').sort({updatedAt: 'desc'});
+    res.status(200).json(videos);
+  } catch (error) {
+    res.status(420).json({message: 'There was an error fetching the videos', error});
+  }
 }
 exports.show = async (req, res) => {
-    try {
-        const video = await Video.findById(req.params.id)
-        .populate('user');
-        res.render(`${viewPath}/show`, {
-        pageTitle: video.title,
-        video: video
-    });
-    }catch(err){
-        req.flash('danger', 'We were unable to display the video for some reason.');
-        console.error(err);
-        res.redirect('/');
-    }
-}
-//skipped this by just having a form pop up on index
-/*
+  try {
+    const video = await Video.findById(req.params.id).populate('user');
+    
+    res.status(200).json(video);
+  } catch (error) {
+    res.status(400).json({message: "There was an error fetching the video"});
+  }
+};
 exports.new = (req,res) => {
     res.render(`${viewPath}/new`, {
         pageTitle: 'Upload a Video'
     });
 }
-*/
 
 exports.create = async (req, res) => {
     try {
-    if(req.files){
+      //get video link and get the ID and check for hackers!
+      let videoID = req.body.videoID;
+      videoID = videoID.replace("https://www.youtube.com/watch?v=","");
+      //i checked several viedo IDs and they all only contain a-z, digits _'s and -'s. so no cross site scripting today!
+      if(!videoID.match('/([A-Za-z0-9_-])\w+/')){
+        res.status(420).json({message: "You tryna hack me bro?"});
+      } 
       //create video database entry
-      //User association
+      //find the user
       const { user: email } = await req.session.passport;
-      const user = await User.findOne({email: email});//find user
-      //create video
+      const user = await User.findOne({email: email});
       //determin status
       let status;
       if(req.body.status === undefined){
@@ -78,32 +55,24 @@ exports.create = async (req, res) => {
       }else{
         status = "PUBLIC"
       }
-
-      const video = await Video.create({user: user._id, title: req.body.title, description: req.body.description, status});
-      req.flash('success', 'Video successfully uploaded!');
-      
-
-      //move video to folder
-      const uploadedVideo = req.files.fileUpload;
-      if(uploadedVideo.mimetype === "video/mp4"){
-        uploadedVideo.mv(`assets/uploads/videos/${video._id}.mp4`, function(error) {
-          if (error)
-            return res.status(500).send(error);
-      
-            res.redirect('/videos');
-        });
-      }
-      
-    }
+      //now add the video to the database
+      const video = await Video.create({user: user._id, title: req.body.title, description: req.body.description, videoID, status});
+      res.status(200);
   } catch (err) {
-      req.flash('danger', `we ran into an issue, heres what it was: ${err}`)
-      req.session.formData = req.body;
-      res.redirect('/videos');
+      res.status(400).json({message: `we ran into an issue, heres what it was: ${err}`})
   }
 }
 exports.edit = async (req, res) => {
     try {
-        const video = await Video.findById(req.params.id);
+      const video = await Video.findById(req.params.id);
+      if(video){
+        return res.status(200).json({
+          status: 'success',
+          message: 'Logged in successfully',
+          video: video
+        })
+      }
+      //old code
         res.render(`${viewPath}/edit`, {
         pageTitle: video.title,
         formData: video
@@ -116,42 +85,40 @@ exports.edit = async (req, res) => {
 }
 exports.update = async (req, res) => {
     try{
+        //find the video
         let video = await Video.findById(req.body.id);
-
-        console.log(video);
-        console.log("we're in update");
-
-        if(!video) throw new Error("Video couldn't be found");
-        
-        video = await Video.findByIdAndUpdate(req.body.id, req.body);
-        
-        req.flash('success', 'The video was updated!');
-        res.redirect(`/videos/${req.body.id}`);
+        if(!video) res.status(400).json({message:"Video couldn't be found"});
+        //get video link and get the ID and check for hackers!
+        let videoID = req.body.videoID;
+        videoID = videoID.replace("https://www.youtube.com/watch?v=","");
+        console.log(videoID);
+        //i checked several viedo IDs and they all only contain a-z, digits _'s and -'s. so no cross site scripting today!
+        if(videoID.match('/([A-Za-z0-9_-])\w+/')){
+          res.status(420).json({message: "You tryna hack me bro?"});
+        } 
+        //find the user
+        const { user: email } = await req.session.passport;
+        const user = await User.findOne({email: email});
+        //determin status
+        let status;
+        if(req.body.status === undefined){
+          status = "PRIVATE";
+        }else{
+          status = "PUBLIC"
+        }
+        //use the videoID to find and update the video with the new variables
+        video = await Video.findByIdAndUpdate(req.body.id,{user: user._id, title: req.body.title, description: req.body.description, videoID, status});
+        res.status(200);
     }catch(error){
-        req.flash('danger', 'We were unable to update this video for some reason, sorry!.');
-        console.error("here is the error: "+error);
-        res.redirect(`/videos/${req.body.id}/edit`);
+        res.status(400).json({message: error});
     }
 }
 
-//set up file remover
-const fs = require('fs');
-
 exports.delete = async (req, res) => {
     try{
-
-        await Video.deleteOne({_id: req.body.id});
-
-        fs.unlink(`assets/uploads/videos/${req.body.id}.mp4`, (err) => {
-          if (err) throw err;
-          console.log('video was deleted was deleted');
-        });
-
-        req.flash('success', `Your video ${req.body.title} was deleted`);
-        res.redirect(`/videos`);
+      await Video.deleteOne({_id: req.body.id});
+      res.status(200);
     }catch(error){
-        req.flash('danger', 'We were unable to delete this video for some reason, sorry!.');
-        console.error(error);
-        res.redirect(`/videos/${req.body.id}/edit`);
+      res.status(400).json({message : 'We were unable to delete this video for some reason, sorry!'});
     }
 }
