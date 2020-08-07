@@ -13,11 +13,7 @@ exports.create = async (req, res) => {
     if(req.body.email !== req.body.emailConfirmation || req.body.password !== req.body.passwordConfirmation){
       res.status(420).json({message:"your password and emails must match!"});
     }
-    // delete req.body.passwordConfirmation;
-    // delete req.body.emailConfirmation;
-    console.log(req.body);
     const user = new User(req.body);
-    console.log(user);
 
     //upload it to the database
     await User.register(user, req.body.password);

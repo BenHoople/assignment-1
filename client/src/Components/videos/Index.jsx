@@ -52,7 +52,12 @@ const Index = ({user}) => {
                           <div className="btn-group">
                               {user._id === latestVideo.user.id ? (
                                   <Fragment>
-                                      <Link  to="/videos/{video._id}/edit"><button type="button" className="btn btn-sm btn-outline-secondary">Edit</button></Link>
+                                      <Link to={{
+                                          pathname: "/videos/edit",
+                                          state: {
+                                            id: latestVideo.id
+                                          }
+                                        }}><button type="button" className="btn btn-sm btn-outline-secondary">Edit</button></Link>
                                       <button className="delete btn btn-sm btn-outline-secondary" onClick = {() => deleteVideo(latestVideo)}>
                                           Delete
                                       </button>
